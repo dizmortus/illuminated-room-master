@@ -1374,6 +1374,13 @@ MonoBehaviour:
     loop: 0
     playOnAwake: 0
     source: {fileID: 0}
+  - name: PvzSound
+    clip: {fileID: 8300000, guid: fb53703444a3741439bbbb9dbd92d275, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+    source: {fileID: 0}
 --- !u!4 &641974126
 Transform:
   m_ObjectHideFlags: 0
@@ -3237,7 +3244,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_flowerAnimationTrigger: OpenFlower
-  m_interactionSound: 
+  m_interactionSound: PvzSound
 --- !u!65 &1308865937
 BoxCollider:
   m_ObjectHideFlags: 0
