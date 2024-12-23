@@ -5,7 +5,7 @@ using UnityEngine;
 public class FlowerInteraction : MonoBehaviour, IInteractable
 {
     private Animator m_animator;
-    private bool m_animationPlayed = false; // Флаг для проверки, проигрывалась ли анимация
+
 
     [SerializeField]
     private string m_flowerAnimationTrigger; // Имя триггера для анимации
