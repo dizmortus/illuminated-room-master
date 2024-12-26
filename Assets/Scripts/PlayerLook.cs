@@ -1,73 +1,85 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-
-/*
- * The code in this script is based on a publically available YouTube tutorial produced by user Acacia Developer (2018)
- * For the full reference to this source, along with others used for this Design Challenge 02, see Documentation\Design Challenge 02\Sources\Design Challenge 02 Reference List.pdf
- * */
 
 public class PlayerLook : MonoBehaviour
 {
     [SerializeField]
-    private float m_mouseSensitivity = 150.0f; // Controls the amount the persective moves when the player moves their cursor
+    private float m_mouseSensitivity = 150.0f;
 
     [SerializeField]
-    private Transform m_playerBody; // Reference to the player character's Transform component
+    private Transform m_playerBody;
 
-    private float m_xAxisClamp = 0.0f; // Stores players accumulated view rotation on the x-axis
+    private float m_xAxisClamp = 0.0f;
+    private bool isFocusing = false; // Флаг для блокировки ручного управления
 
-    // Locks the player's cursor immediately
     private void Awake()
     {
         LockCursor();
     }
 
-	void Update()
+    void Update()
     {
-        CameraRotation();
-	}
+        if (!isFocusing)
+        {
+            CameraRotation();
+        }
+    }
 
-    // Locks the player's cursor to the centre of the screen and hides it from view
+    public IEnumerator FocusOnTarget(Transform target, float focusDuration = 2.0f, float focusSpeed = 5.0f)
+    {
+        isFocusing = true;
+
+        float elapsedTime = 0.0f;
+        Quaternion initialCameraRotation = transform.rotation;
+        Quaternion initialBodyRotation = m_playerBody.rotation;
+
+        // Направление на цель
+        Vector3 directionToTarget = (target.position - transform.position).normalized;
+
+        // Целевые повороты
+        Quaternion targetBodyRotation = Quaternion.LookRotation(new Vector3(directionToTarget.x, 0, directionToTarget.z));
+        Quaternion targetCameraRotation = Quaternion.LookRotation(directionToTarget);
+
+        while (elapsedTime < focusDuration)
+        {
+            elapsedTime += Time.deltaTime;
+
+            // Плавное поворачивание тела игрока
+            m_playerBody.rotation = Quaternion.Slerp(initialBodyRotation, targetBodyRotation, elapsedTime / focusDuration);
+
+            // Плавное поворачивание камеры
+            transform.rotation = Quaternion.Slerp(initialCameraRotation, targetCameraRotation, elapsedTime / focusDuration);
+
+            yield return null;
+        }
+
+        // Гарантируем финальное положение
+        m_playerBody.rotation = targetBodyRotation;
+        transform.rotation = targetCameraRotation;
+
+        // Обновляем m_xAxisClamp для синхронизации с новым углом
+        Vector3 cameraEulerAngles = transform.localEulerAngles;
+        m_xAxisClamp = cameraEulerAngles.x > 180 ? cameraEulerAngles.x - 360 : cameraEulerAngles.x;
+
+        isFocusing = false; // Разрешаем управление камерой после фокусировки
+    }
+
     private void LockCursor()
     {
-        Cursor.lockState = CursorLockMode.None;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
-    // Rotates the player's view based on their mouse cursor's movement
     private void CameraRotation()
     {
-        // Gets and stores input from the player's mouse, scaling it based on mouse sensitivy and frame rate
-        float _mouseX = Input.GetAxisRaw("Mouse X") * m_mouseSensitivity * Time.deltaTime; 
+        float _mouseX = Input.GetAxisRaw("Mouse X") * m_mouseSensitivity * Time.deltaTime;
         float _mouseY = Input.GetAxisRaw("Mouse Y") * m_mouseSensitivity * Time.deltaTime;
 
-        // Accumlates to the player's mouse cursor y-axis movement. If amount exceeds certain values, calls method to prevent further rotation in that direction
-        m_xAxisClamp += _mouseY; 
-        if (m_xAxisClamp > 90.0f)
-        {
-            m_xAxisClamp = 90.0f;
-            _mouseY = 0.0f;
-            ClampXAxisRotationToValue(270.0f);
-        }
-        else if (m_xAxisClamp < -90.0f)
-        {
-            m_xAxisClamp = -90.0f;
-            _mouseY = 0.0f;
-            ClampXAxisRotationToValue(90.0f);
-        }
+        // Проверяем накопленное значение m_xAxisClamp
+        m_xAxisClamp -= _mouseY; // Уменьшаем из-за перевёрнутой оси Y
+        m_xAxisClamp = Mathf.Clamp(m_xAxisClamp, -90.0f, 90.0f);
 
-        // Rotates the player's view
-        transform.Rotate(Vector3.left * _mouseY);
-        m_playerBody.Rotate(Vector3.up * _mouseX);
-    }
-
-    // Clamps the rotation on the x axis, preventing the the player from rotating 360 degrees on that axis
-    private void ClampXAxisRotationToValue(float _value)
-    {
-        Vector3 _eulerRoation = transform.eulerAngles;
-        _eulerRoation.x = _value;
-        transform.eulerAngles = _eulerRoation;
+        transform.localEulerAngles = new Vector3(m_xAxisClamp, 0, 0); // Управление камерой
+        m_playerBody.Rotate(Vector3.up * _mouseX); // Вращение тела игрока
     }
 }

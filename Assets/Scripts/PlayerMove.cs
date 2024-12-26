@@ -2,44 +2,40 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/*
- * The code in this script is based on a publically available YouTube tutorial produced by user Acacia Developer (2018)
- * For the full reference to this source, along with others used for this Design Challenge 02, see Documentation\Design Challenge 02\Sources\Design Challenge 02 Reference List.pdf
- * */
-
 public class PlayerMove : MonoBehaviour
 {
-    private CharacterController m_charController; // Reference to the player character's CharacterController component
+    private CharacterController m_charController;
 
     [SerializeField]
-    private float m_movementSpeed = 3.0f; // Controls how quickly the player moves in a direction
+    private float m_movementSpeed = 3.0f;
     [SerializeField]
     private string m_movementSound;
 
+    public bool isMovementBlocked = false; // Флаг блокировки движения
+
     private void Awake()
     {
-        m_charController = GetComponent<CharacterController>(); // Gets and stores a reference to the player character's CharacterController component
+        m_charController = GetComponent<CharacterController>();
     }
 
     private void Update()
     {
-        PlayerMovement();
+        if (!isMovementBlocked) // Проверяем флаг блокировки движения
+        {
+            PlayerMovement();
+        }
     }
 
-    // Moves the player character in world based on user input
     void PlayerMovement()
     {
-        // Gets and stores the player's vertical and horizontal input
         float _verticalInput = Input.GetAxis("Vertical");
         float _horizInput = Input.GetAxis("Horizontal");
 
-        // Stores amount to move on player character's forward and right vectors
         Vector3 _forwardMovement = transform.forward * _verticalInput;
         Vector3 _rightMovement = transform.right * _horizInput;
 
         Vector3 _movementVector = Vector3.ClampMagnitude(_forwardMovement + _rightMovement, 1.0f);
 
-        // Uses CharacterController component to move player based on forward and right vectors.
         m_charController.SimpleMove(_movementVector * m_movementSpeed);
 
         MovementSound(_movementVector);
