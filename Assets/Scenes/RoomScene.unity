@@ -4719,7 +4719,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 2, y: 2, z: 2}
-  m_Center: {x: 0, y: 0, z: -2}
+  m_Center: {x: -0.5, y: 0, z: 0}
 --- !u!114 &1510904780
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4918,22 +4918,22 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: bc8620aa384d50546848b4a73471ce73,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -8.91
+      value: -6.974902
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bc8620aa384d50546848b4a73471ce73,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.156
+      value: 1.477
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bc8620aa384d50546848b4a73471ce73,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1.53
+      value: -5.333826
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bc8620aa384d50546848b4a73471ce73,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7237815
+      value: 0.9370564
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bc8620aa384d50546848b4a73471ce73,
         type: 3}
@@ -4943,7 +4943,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: bc8620aa384d50546848b4a73471ce73,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.6900292
+      value: 0.34917808
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bc8620aa384d50546848b4a73471ce73,
         type: 3}
@@ -4958,7 +4958,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: bc8620aa384d50546848b4a73471ce73,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 87.265
+      value: 40.874
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bc8620aa384d50546848b4a73471ce73,
         type: 3}
@@ -4970,6 +4970,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: book
       objectReference: {fileID: 0}
+    - target: {fileID: 4597897158021195538, guid: bc8620aa384d50546848b4a73471ce73,
+        type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 13b3e03e5f58645429d451263ec3e494, type: 2}
+    - target: {fileID: 5133416565504549947, guid: bc8620aa384d50546848b4a73471ce73,
+        type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 13b3e03e5f58645429d451263ec3e494, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
