@@ -10,7 +10,7 @@ public class CatBehavior : MonoBehaviour
     public float followDistance = 5.0f; // Дистанция, на которой кот начинает следовать
     public float interactionDistance = 2.0f; // Дистанция для взаимодействия
     public float interactionCooldown = 5.0f; // Задержка между взаимодействиями
-    public string meowSound = "Meow";
+    public string meowSound = "meow";
 
     private Animator animator;
     private bool isInteracting = false;

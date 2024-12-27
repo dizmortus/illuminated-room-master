@@ -8,18 +8,39 @@ public class BowlBehavior : MonoBehaviour, IInteractable
     public Transform cat; // Ссылка на кота
     public CatBehavior catBehavior; // Ссылка на поведение кота
     public Transform bowlPosition; // Позиция миски
+    public Transform carpetPosition; // Позиция ковра
     public float eatingDuration = 5.0f; // Длительность процесса еды
+    public float startMovingDelay = 2.0f;
+    public float stopDistance = 0.5f;
+    public float startEatingDelay = 2f;
+    public float carpetStopDistance = 0.5f;
+
+    public string catReadyToEatSound = "cute"; // Звук при начале добавления еды
+    public string bowlFillingSound = "food"; // Звук во время заполнения миски
+    public string catEatingSound = "cateat"; // Звук во время еды
+    public string catAfterEatingSound = "urring"; // Звук после еды
 
     private bool isFoodAdded = false; // Флаг, показывающий, что еда в миске
 
-    // Реализация метода интерфейса IInteractable
+    private bool canAddFood = false; // Новый флаг для проверки возможности добавить корм
+
+    public void AllowFoodAddition()
+    {
+        canAddFood = true;
+        Debug.Log("Food addition is now allowed.");
+    }
+
     public void Interact()
     {
-        Debug.Log("Player interacted with the bowl.");
+        if (!canAddFood)
+        {
+            Debug.Log("You need to prepare the food first.");
+            return;
+        }
+
         if (!isFoodAdded)
         {
-            Debug.Log("Food is being added to the bowl.");
-            FillBowl(); // Начинаем процесс заполнения миски
+            FillBowl();
         }
         else
         {
@@ -27,68 +48,151 @@ public class BowlBehavior : MonoBehaviour, IInteractable
         }
     }
 
+
     private void FillBowl()
     {
         isFoodAdded = true;
 
+
+
+        // Воспроизводим звук заполнения миски
+        if (!string.IsNullOrEmpty(bowlFillingSound))
+        {
+            AudioManager.instance.Play(bowlFillingSound);
+        }
+
         // Анимация заполнения миски
         if (bowlAnimator != null)
         {
-            Debug.Log("Triggering bowl fill animation.");
             bowlAnimator.SetTrigger("Fill");
         }
+
+        // Останавливаем звук заполнения миски, если он длительный
+        StartCoroutine(StopFillingSoundAfterDelay(2.0f)); // Предполагаемая длительность звука
 
         // Останавливаем кота и отправляем его к миске
         if (catBehavior != null)
         {
-            Debug.Log("Disabling cat behavior and moving cat to the bowl.");
-            catBehavior.enabled = false; // Отключаем поведение кота
+            catBehavior.enabled = false;
             StartCoroutine(CatEatsFood());
         }
-        else
+    }
+
+    private IEnumerator StopFillingSoundAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (!string.IsNullOrEmpty(bowlFillingSound))
         {
-            Debug.LogWarning("CatBehavior is not assigned. Cannot move cat to the bowl.");
+            AudioManager.instance.Stop(bowlFillingSound);
         }
     }
 
     private IEnumerator CatEatsFood()
     {
-        if (catBehavior != null)
+        yield return new WaitForSeconds(startMovingDelay);
+        // Воспроизводим звук добавления еды
+        if (!string.IsNullOrEmpty(catReadyToEatSound))
         {
-            Debug.Log("Cat is heading towards the bowl.");
-            catBehavior.FollowTarget(bowlPosition.position);
+            AudioManager.instance.Play(catReadyToEatSound);
         }
 
-        // Ждём, пока кот добежит
-        while (Vector3.Distance(cat.position, bowlPosition.position) > 0.5f)
+        Vector3 targetPosition = bowlPosition.position;
+        if (bowlPosition.TryGetComponent<Collider>(out Collider bowlCollider))
         {
-            yield return null;
+            targetPosition = bowlCollider.ClosestPoint(cat.position);
         }
-        Debug.Log("Cat has reached the bowl.");
 
-/*        // Анимация поедания еды
         if (catAnimator != null)
         {
-            Debug.Log("Triggering cat eating animation.");
-            catAnimator.SetTrigger("Eat");
-        }*/
+            catAnimator.SetBool("isRunning", true);
+        }
 
-        // Анимация опустошения миски
-        yield return new WaitForSeconds(1.0f); // Подождите перед началом
+        if (catBehavior != null)
+        {
+            catBehavior.FollowTarget(targetPosition);
+            while (Vector3.Distance(cat.position, targetPosition) > stopDistance)
+            {
+                yield return null;
+            }
+        }
+
+        if (catAnimator != null)
+        {
+            catAnimator.SetBool("isRunning", false);
+        }
+
+        yield return new WaitForSeconds(startEatingDelay);
+
+        if (catAnimator != null)
+        {
+            catAnimator.SetTrigger("Eat");
+        }
         if (bowlAnimator != null)
         {
-            Debug.Log("Triggering bowl empty animation.");
             bowlAnimator.SetTrigger("Empty");
         }
 
-        // Ожидание завершения еды
+        // Воспроизводим звук еды
+        if (!string.IsNullOrEmpty(catEatingSound))
+        {
+            AudioManager.instance.Play(catEatingSound);
+        }
+
         yield return new WaitForSeconds(eatingDuration);
 
-        // Делаем кота пассивным
+        // Останавливаем звук еды, если он длительный
+        AudioManager.instance.Stop(catEatingSound);
+
+        // Воспроизводим звук после еды
+        if (!string.IsNullOrEmpty(catAfterEatingSound))
+        {
+            AudioManager.instance.Play(catAfterEatingSound);
+        }
+
+
+        StartCoroutine(MoveToCarpet());
+    }
+
+    private IEnumerator MoveToCarpet()
+    {
+        Vector3 targetPosition = carpetPosition.position;
+
+        if (catAnimator != null)
+        {
+            catAnimator.SetBool("isRunning", true);
+        }
+
         if (catBehavior != null)
         {
-            Debug.Log("Cat has finished eating. Disabling cat behavior.");
-            catBehavior.enabled = false; // Отключаем скрипт поведения кота
+            catBehavior.FollowTarget(targetPosition);
+            while (Vector3.Distance(cat.position, targetPosition) > carpetStopDistance)
+            {
+                yield return null;
+            }
+        }
+
+        if (catAnimator != null)
+        {
+            catAnimator.SetBool("isRunning", false);
+            catAnimator.SetTrigger("Sit");
+        }
+
+        // Разворот кота в сторону миски
+        Vector3 directionToBowl = (bowlPosition.position - cat.position).normalized;
+        directionToBowl.y = 0; // Убираем вертикальную составляющую
+        Quaternion targetRotation = Quaternion.LookRotation(directionToBowl);
+
+        float rotationSpeed = 5.0f; // Скорость разворота
+        while (Quaternion.Angle(cat.rotation, targetRotation) > 0.1f)
+        {
+            cat.rotation = Quaternion.Slerp(cat.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            yield return null;
+        }
+
+        if (catBehavior != null)
+        {
+            catBehavior.enabled = false; // Делаем кота пассивным
         }
     }
 }
